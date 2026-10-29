@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDK Invoicing | Premium Bill Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css?v=1.1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand" onclick="switchView('dashboard-view')">
+                <i class="ph-fill ph-receipt"></i>
+                <span>RDK</span>
+            </div>
+            <nav id="sidebar-nav" style="position: relative;">
+                <div class="nav-backgrounds">
+                    <div class="nav-indicator" id="nav-indicator"></div>
+                    <div class="nav-hover-bubble" id="nav-hover-bubble"></div>
+                </div>
+                <a href="#" class="nav-item active" data-target="dashboard-view">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-target="create-view">
+                    <i class="ph ph-plus-circle"></i>
+                    <span>New Invoice</span>
+                </a>
+                <a href="#" class="nav-item" data-target="list-view">
+                    <i class="ph ph-receipt"></i>
+                    <span>All Invoices</span>
+                </a>
+                <a href="#" class="nav-item" data-target="clients-view">
+                    <i class="ph ph-users"></i>
+                    <span>Clients</span>
+                </a>
+                <a href="#" class="nav-item" data-target="reports-view">
+                    <i class="ph ph-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <h1 id="page-title">Dashboard</h1>
+                <div class="theme-toggle-switch" id="theme-toggle" title="Toggle Light/Dark Theme">
+                    <i class="ph ph-sun theme-icon sun"></i>
+                    <div class="switch-knob"></div>
+                    <i class="ph ph-moon theme-icon moon"></i>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div class="views-container">
+                
+                <!-- Dashboard View -->
+                <section id="dashboard-view" class="view active">
+                    <div class="metrics-grid">
+                        <div class="metric-card glow-gold" onclick="navigateToFilteredInvoices('all')">
+                            <div class="metric-icon"><i class="ph ph-file-text"></i></div>
+                            <div class="metric-info">
+                                <h3>Total Invoices</h3>
+                                <p id="metric-total-count">0</p>
+                            </div>
+                        </div>
+                        <div class="metric-card glow-green" onclick="navigateToFilteredInvoices('paid')">
+                            <div class="metric-icon"><i class="ph ph-check-circle"></i></div>
+                            <div class="metric-info">
+                                <h3>Total Paid</h3>
+                                <p id="metric-total-paid">LKR 0.00</p>
+                            </div>
+                        </div>
+                        <div class="metric-card glow-orange" onclick="navigateToFilteredInvoices('pending')">
+                            <div class="metric-icon"><i class="ph ph-clock"></i></div>
+                            <div class="metric-info">
+                                <h3>Outstanding</h3>
+                                <p id="metric-total-unpaid">LKR 0.00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-section">
+                        <div class="section-header">
+                            <h2>Recent Invoices</h2>
+                            <button class="btn btn-primary" onclick="switchView('create-view')">Create New</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th class="text-right">Amount</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-invoices-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Create Invoice View -->
+                <section id="create-view" class="view">
+                    <div class="card">
+                        <h2>Create New Invoice</h2>
+                        <form id="invoice-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientSelect">Client Name</label>
+                                    <div class="custom-select-wrapper" id="clientSelectWrapper">
+                                        <div class="custom-select-trigger" id="clientSelectTrigger">
+                                            <span>Select a client</span>
+                                            <i class="ph ph-caret-down"></i>
+                                        </div>
+                                        <div class="custom-select-options" id="clientSelectOptions">
+                                            <!-- Dynamically populated -->
+                                        </div>
+                                        <input type="hidden" id="clientSelect" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoiceDate">Date</label>
+                                    <div class="date-input-container" id="date-picker-wrapper">
+                                        <input type="text" id="invoiceDate" data-input placeholder="DD-MM-YYYY" required>
+                                        <div class="calendar-icon-btn" data-toggle>
+                                            <i class="ph ph-calendar"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status-toggle">Status</label>
+                                    <div class="status-toggle-switch" id="status-toggle" tabindex="0" aria-label="Invoice Status">
+                                        <input type="hidden" id="invoiceStatus" value="pending">
+                                        <div class="status-option option-pending active" data-value="pending">
+                                            <i class="ph ph-clock"></i> Pending
+                                        </div>
+                                        <div class="status-option option-paid" data-value="paid">
+                                            <i class="ph ph-check-circle"></i> Paid
+                                        </div>
+                                        <div class="status-slider"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="line-items-section">
+                                <div class="section-header">
+                                    <h3>Line Items</h3>
+                                    <button type="button" class="btn btn-secondary btn-small" id="add-item-btn">
+                                        <i class="ph ph-plus"></i> Add Item
+                                    </button>
+                                </div>
+                                <div class="items-header">
+                                    <span class="col-desc">Description</span>
+                                    <span class="col-qty">Qty</span>
+                                    <span class="col-price">Price (LKR)</span>
+                                    <span class="col-total">Total</span>
+                                    <span class="col-action"></span>
+                                </div>
+                                <div id="items-container">
+                                    <!-- Dynamic Items -->
+                                </div>
+                                <div class="invoice-summary">
+                                    <div class="summary-row total">
+                                        <span>Grand Total:</span>
+                                        <span id="grand-total-display">LKR 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-ghost" onclick="switchView('dashboard-view')">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Invoice</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- All Invoices View -->
+                <section id="list-view" class="view">
+                    <div class="card">
+                        <div class="section-header">
+                            <h2>All Invoices</h2>
+                            <div class="filters" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                                <input id="invoice-search" type="search" placeholder="Search invoice or client" aria-label="Search invoices" style="min-width:190px; max-width:240px; padding:8px 12px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-input); color:var(--text-primary);">
+                                <select id="invoice-sort" aria-label="Sort invoices" style="min-width:145px; padding:8px 12px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-input); color:var(--text-primary);">
+                                    <option value="newest">Newest first</option>
+                                    <option value="oldest">Oldest first</option>
+                                    <option value="amount-high">Amount: high to low</option>
+                                    <option value="amount-low">Amount: low to high</option>
+                                    <option value="client">Client A–Z</option>
+                                </select>
+                                <div class="custom-select-wrapper" id="statusFilterWrapper" style="min-width: 140px;">
+                                    <div class="custom-select-trigger" id="statusFilterTrigger" style="padding: 8px 16px; border-radius: var(--radius-md);">
+                                        <span>All Status</span>
+                                        <i class="ph ph-caret-down"></i>
+                                    </div>
+                                    <div class="custom-select-options" id="statusFilterOptions">
+                                        <div class="custom-option selected" data-value="all">All Status</div>
+                                        <div class="custom-option" data-value="paid">Paid</div>
+                                        <div class="custom-option" data-value="pending">Pending</div>
+                                    </div>
+                                    <input type="hidden" id="status-filter" value="all">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th class="text-right">Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="all-invoices-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Clients Directory View -->
+                <section id="clients-view" class="view">
+                    <div class="section-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 600;">Clients</h2>
+                            <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Manage your client directory</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openClientModal()"><i class="ph ph-plus"></i> New Client</button>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <input id="client-search" type="search" placeholder="Search clients by name, email or phone" aria-label="Search clients" style="width:100%; max-width:420px; padding:10px 14px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-input); color:var(--text-primary);">
+                    </div>
+                    <div class="clients-grid" id="clients-grid">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- Reports View -->
+                <section id="reports-view" class="view">
+                    <div class="card" id="reports-card">
+                        <div class="section-header" style="margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                            <div>
+                                <h2 style="font-size: 24px; font-weight: 600;">Financial Reports</h2>
+                                <p id="report-desc-subtitle" style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Analyze revenue, collections, and pending dues</p>
+                                <p id="report-print-subtitle" style="display: none; color: var(--text-secondary); font-size: 14px; margin-top: 4px; font-weight: 600;"></p>
+                            </div>
+                            <div class="report-filters" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <!-- Report Type Selection -->
+                                <div class="custom-select-wrapper" id="reportTypeWrapper" style="min-width: 150px;">
+                                    <div class="custom-select-trigger" id="reportTypeTrigger">
+                                        <span>Monthly Report</span>
+                                        <i class="ph ph-caret-down"></i>
+                                    </div>
+                                    <div class="custom-select-options" id="reportTypeOptions">
+                                        <div class="custom-option selected" data-value="monthly">Monthly Report</div>
+                                        <div class="custom-option" data-value="custom">Custom Period</div>
+                                    </div>
+                                    <input type="hidden" id="reportType" value="monthly">
+                                </div>
+
+                                <!-- Month Selection (Visible when Monthly Report is selected) -->
+                                <div class="custom-select-wrapper" id="reportMonthWrapper" style="min-width: 150px;">
+                                    <div class="custom-select-trigger" id="reportMonthTrigger">
+                                        <span>Select Month</span>
+                                        <i class="ph ph-caret-down"></i>
+                                    </div>
+                                    <div class="custom-select-options" id="reportMonthOptions">
+                                        <!-- Dynamically populated via JS -->
+                                    </div>
+                                    <input type="hidden" id="reportMonth" value="">
+                                </div>
+
+                                <!-- Custom Date Selection (Visible when Custom Period is selected) -->
+                                <div class="form-row date-range-group" id="reportCustomGroup" style="display: none; margin-bottom: 0; gap: 12px; align-items: center; flex-direction: row;">
+                                    <div class="date-input-container" style="max-width: 140px;">
+                                        <input type="text" id="reportStartDate" placeholder="Start Date">
+                                    </div>
+                                    <span style="color: var(--text-secondary);">to</span>
+                                    <div class="date-input-container" style="max-width: 140px;">
+                                        <input type="text" id="reportEndDate" placeholder="End Date">
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-secondary" onclick="printReport()"><i class="ph ph-printer"></i> Print</button>
+                            </div>
+                        </div>
+
+                        <!-- Report Summary Dashboard -->
+                        <div class="report-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px;">
+                            <div class="metric-card glow-gold" style="padding: 20px; min-height: auto;">
+                                <div class="metric-icon" style="width: 44px; height: 44px; font-size: 20px;"><i class="ph ph-file-text"></i></div>
+                                <div class="metric-info">
+                                    <h3 style="font-size: 13px; margin-bottom: 4px;">Total Invoiced</h3>
+                                    <p id="report-total-invoiced" style="font-size: 22px; font-weight: 700;">LKR 0.00</p>
+                                </div>
+                            </div>
+                            <div class="metric-card glow-green" style="padding: 20px; min-height: auto;">
+                                <div class="metric-icon" style="width: 44px; height: 44px; font-size: 20px; color: var(--success); border-color: var(--metric-green-border);"><i class="ph ph-check-circle"></i></div>
+                                <div class="metric-info">
+                                    <h3 style="font-size: 13px; margin-bottom: 4px;">Collected (Paid)</h3>
+                                    <p id="report-total-paid" style="font-size: 22px; font-weight: 700;">LKR 0.00</p>
+                                </div>
+                            </div>
+                            <div class="metric-card glow-orange" style="padding: 20px; min-height: auto;">
+                                <div class="metric-icon" style="width: 44px; height: 44px; font-size: 20px; color: var(--warning); border-color: var(--metric-orange-border);"><i class="ph ph-clock"></i></div>
+                                <div class="metric-info">
+                                    <h3 style="font-size: 13px; margin-bottom: 4px;">Outstanding (Pending)</h3>
+                                    <p id="report-total-pending" style="font-size: 22px; font-weight: 700;">LKR 0.00</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report Details Table -->
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th class="text-right">Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-table-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Invoice Details Modal -->
+    <div class="modal-overlay" id="invoice-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Invoice Details</h2>
+                <button class="close-modal" id="close-modal-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="modal-footer" id="modal-actions">
+                <!-- Actions injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Create/Edit Modal -->
+    <div class="modal-overlay" id="client-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="client-modal-title">New Client</h2>
+                <button class="close-modal" onclick="closeClientModal()"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="client-form" onsubmit="saveClient(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-client-id">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="client-name">Name</label>
+                        <input type="text" id="client-name" required placeholder="Enter client name">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="client-email">Email</label>
+                        <input type="email" id="client-email" placeholder="Enter client email">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="client-phone">Phone</label>
+                        <input type="text" id="client-phone" placeholder="Enter client phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-address">Address</label>
+                        <textarea id="client-address" placeholder="Enter client address" rows="3" style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px; width: 100%; resize: vertical; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeClientModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="client-save-btn">Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display: none;">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+        </defs>
+    </svg>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="script.js?v=2.0.0"></script>
+</body>
+</html>
