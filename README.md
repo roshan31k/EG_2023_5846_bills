@@ -156,12 +156,6 @@ The backend provides the following endpoints for working with invoices and clien
 
 The invoice list supports searching by invoice ID or client name, filtering invoices by payment status, and sorting by date.
 
-For example:
-
-```text
-GET /api/invoices?search=INV-001&status=pending&sort=oldest
-```
-
 ### Client Endpoints
 
 | Method | Endpoint | Purpose |
@@ -171,11 +165,6 @@ GET /api/invoices?search=INV-001&status=pending&sort=oldest
 | PUT | `/api/clients/:id` | Updates client information |
 | DELETE | `/api/clients/:id` | Deletes a client |
 
-Users can also search for clients by name. For example:
-
-```text
-GET /api/clients?search=Kamal
-```
 
 ## 8. Database Design
 
