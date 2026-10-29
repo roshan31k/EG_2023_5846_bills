@@ -32,7 +32,7 @@ The application includes basic validation to check required information before s
 
 The backend also returns appropriate HTTP status codes and error messages when requests fail. Duplicate record IDs are handled by returning a conflict response.
 
-## 4. Technologies Used
+## 3. Technologies Used
 
 - **HTML5** – Structures the web pages.
 - **CSS3** – Controls the appearance and layout of the application.
@@ -42,7 +42,7 @@ The backend also returns appropriate HTTP status codes and error messages when r
 - **MongoDB** – Stores invoices and client records.
 - **Mongoose** – Defines the database schemas and manages database operations.
 
-## 5. Project Structure
+## 4. Project Structure
 
 The main project files are organized as follows:
 
